@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>治愈系背单词</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ================= 顶部：日期与统计 ================= -->
+        <header class="header">
+            <div class="date-text" id="date-text">2026-10-19</div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-label">今日已背</div>
+                    <div class="stat-value" id="today-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">累计总数</div>
+                    <div class="stat-value" id="total-count">0</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">0 / 0</div>
+        </header>
+
+        <!-- ================= 工具栏 ================= -->
+        <div class="toolbar">
+            <select class="library-select" id="library-select">
+                <optgroup label="内置词库">
+                    <option value="builtin:grade8">初二词库</option>
+                    <option value="builtin:cet4">四级词库</option>
+                </optgroup>
+                <optgroup label="我的词库" id="custom-optgroup"></optgroup>
+            </select>
+
+            <label class="upload-btn" title="上传 txt 文件（格式：apple 苹果）">
+                <input type="file" id="file-input" accept=".txt" hidden>
+                <span>📤 上传词库</span>
+            </label>
+
+            <button class="review-btn" id="review-btn">
+                📚 进入复习 (<span id="review-count">0</span>)
+            </button>
+
+            <button class="wrong-book-btn" id="wrong-book-btn">
+                📕 错题本 (<span id="wrong-book-count">0</span>)
+            </button>
+        </div>
+
+        <!-- ================= 模式标签 ================= -->
+        <div class="mode-tag" id="mode-tag">📖 学习模式</div>
+
+        <!-- ================= Combo 显示区域 ================= -->
+        <div class="combo-area" id="combo-area">
+            <div class="combo-counter" id="combo-counter"></div>
+        </div>
+
+        <!-- ================= 卡片区域 ================= -->
+        <div class="card-area" id="card-area">
+            <div class="card-wrapper">
+                <div class="card" id="flashcard">
+                    <div class="card-front">
+                        <button class="speak-btn" id="speak-btn-front" title="朗读单词">🔊</button>
+                        <div class="word-text" id="word-text">serendipity</div>
+                        <div class="phonetic-text" id="phonetic-text">/ˌserənˈdɪpəti/</div>
+                        <div class="card-buttons">
+                            <button class="btn btn-unknown" data-side="front" data-action="unknown">不认识</button>
+                            <button class="btn btn-known" data-side="front" data-action="known">记住了</button>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <button class="speak-btn" id="speak-btn-back" title="朗读单词">🔊</button>
+                        <div class="meaning-text" id="meaning-text">意外发现珍奇事物的本领</div>
+                        <div class="card-buttons">
+                            <button class="btn btn-unknown" data-side="back" data-action="unknown">不认识</button>
+                            <button class="btn btn-known" data-side="back" data-action="known">记住了</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="view-meaning-btn" id="view-meaning-btn">点击查看释义</button>
+        </div>
+
+        <!-- ================= 拼写区域 ================= -->
+        <div class="spelling-area hidden" id="spelling-area">
+            <div class="spelling-card">
+                <div class="spelling-meaning" id="spelling-meaning">苹果</div>
+                <div class="spelling-hint" id="spelling-hint">请输入对应的英文单词</div>
+                <input type="text" class="spelling-input" id="spelling-input" placeholder="type here..." autocomplete="off">
+                <div class="spelling-feedback" id="spelling-feedback"></div>
+                <button class="btn btn-known" id="spelling-submit">提交</button>
+            </div>
+            <div class="spelling-progress" id="spelling-progress">0 / 0</div>
+        </div>
+
+        <!-- ================= 空状态 ================= -->
+        <div class="empty-state hidden" id="empty-state">
+            <div class="empty-icon">🌱</div>
+            <p>当前词库为空，快去上传一个吧～</p>
+        </div>
+
+        <!-- ================= 日历打卡热力图 ================= -->
+        <div class="heatmap-section">
+            <div class="heatmap-title">📅 近期打卡</div>
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+        </div>
+
+    </div>
+
+    <!-- ================= 错题本侧边栏 ================= -->
+    <div class="sidebar-overlay" id="sidebar-overlay">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>📕 错题本</h2>
+                <button class="sidebar-close" id="sidebar-close">✕</button>
+            </div>
+            <div class="sidebar-content" id="sidebar-content"></div>
+            <div class="sidebar-empty hidden" id="sidebar-empty">
+                <div class="empty-icon">🌿</div>
+                <p>暂无错题，继续保持！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 弹窗：今日目标达成 ================= -->
+    <div class="modal-overlay" id="modal-done">
+        <div class="modal">
+            <div class="modal-icon">🌿</div>
+            <h2>今日目标已达成</h2>
+            <p>要不要来一场拼写挑战呢？</p>
+            <div class="modal-buttons">
+                <button class="btn btn-reset" id="btn-go-spelling">进入拼写</button>
+                <button class="btn btn-unknown" id="btn-close-done">休息一下</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 弹窗：拼写结果 ================= -->
+    <div class="modal-overlay" id="modal-spelling-result">
+        <div class="modal">
+            <div class="modal-icon" id="spelling-result-icon">🎯</div>
+            <h2 id="spelling-result-title">拼写挑战完成</h2>
+            <p id="spelling-result-text">正确率：100%</p>
+            <button class="btn btn-known" id="btn-close-spelling">太棒了</button>
+        </div>
+    </div>
+
+    <!-- ================= 弹窗：自定义词库命名 ================= -->
+    <div class="modal-overlay" id="modal-naming">
+        <div class="modal">
+            <div class="modal-icon">📝</div>
+            <h2>为词库起个名字</h2>
+            <input type="text" class="naming-input" id="naming-input" placeholder="例如：托福核心" maxlength="20">
+            <div class="modal-buttons">
+                <button class="btn btn-known" id="btn-confirm-name">保存</button>
+                <button class="btn btn-unknown" id="btn-cancel-name">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 新增：终极奖励结算页面 ================= -->
+    <div class="reward-overlay" id="reward-overlay">
+        <!-- 撒花动画容器 -->
+        <div class="reward-particles" id="reward-particles"></div>
+        
+        <!-- 奖励内容 -->
+        <div class="reward-content">
+            <div class="reward-icon">🏆</div>
+            <div class="reward-quote" id="reward-quote">你走过的路，每一步都算数。</div>
+            <div class="reward-stats">
+                <div class="reward-stat-item">
+                    <div class="reward-stat-label">今日消灭</div>
+                    <div class="reward-stat-value" id="reward-learned">0</div>
+                    <div class="reward-stat-unit">个单词</div>
+                </div>
+                <div class="reward-stat-divider"></div>
+                <div class="reward-stat-item">
+                    <div class="reward-stat-label">最高连击</div>
+                    <div class="reward-stat-value" id="reward-max-combo">0</div>
+                    <div class="reward-stat-unit">次</div>
+                </div>
+            </div>
+            <button class="btn btn-reset reward-btn" id="btn-claim-reward">收下奖励并休息</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
